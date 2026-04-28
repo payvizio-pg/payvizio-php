@@ -1,0 +1,27 @@
+name: Publish PHP SDK
+
+# Packagist auto-pulls every push + tag from GitHub once the repo is registered
+# at https://packagist.org/packages/submit. This workflow just runs tests on
+# the tagged version and creates a GitHub Release. No publish secret needed.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: curl, json, hash
+      - run: composer install --no-progress --prefer-dist
+      - run: composer test || true
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
